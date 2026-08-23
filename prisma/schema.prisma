@@ -1,13 +1,16 @@
-generator client {
-  provider = "prisma-client-js"
-}
+
 
 // Default: SQLite so `npm run dev` works with zero cloud accounts.
 // Production (Supabase): set provider = "postgresql" and DATABASE_URL to the pooler URL.
 // See ARCHITECTURE.md.
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
