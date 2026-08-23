@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Default: SQLite so `npm run dev` works with zero cloud accounts.
+// Production (Supabase): set provider = "postgresql" and DATABASE_URL to the pooler URL.
+// See ARCHITECTURE.md.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String
+  createdAt    DateTime @default(now())
+
+  venues   Venue[]
+  shows    Show[]           @relation("OrganiserShows")
+  holds    Hold[]
+  bookings Booking[]
+  waitlist WaitlistEntry[]
+}
+
+model Venue {
+  id          String @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  seats       Seat[]
+  shows       Show[]
+}
+
+model Seat {
+  id       String     @id @default(cuid())
+  venueId  String
+  venue    Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  row      String
+  number   Int
+  category String
+  showSeats ShowSeat[]
+
+  @@unique([venueId, row, number])
+}
+
+model Show {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  kind          String
+  genre         String
+  venueId       String
+  venue         Venue    @relation(fields: [venueId], references: [id])
+  organiserId   String
+  organiser     User     @relation("OrganiserShows", fields: [organiserId], references: [id])
+  startsAt      DateTime
+  durationMin   Int
+  premiumPrice  Int
+  standardPrice Int
+  createdAt     DateTime @default(now())
+
+  seats    ShowSeat[]
+  bookings Booking[]
+  waitlist WaitlistEntry[]
+}
+
+model ShowSeat {
+  id         String  @id @default(cuid())
+  showId     String
+  show       Show    @relation(fields: [showId], references: [id], onDelete: Cascade)
+  seatId     String
+  seat       Seat    @relation(fields: [seatId], references: [id])
+  category   String
+  priceCents Int
+  status     String
+
+  hold        Hold?
+  bookingSeat BookingSeat?
+
+  @@unique([showId, seatId])
+  @@index([showId, status, category])
+}
+
+model Hold {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showSeatId String   @unique
+  showSeat   ShowSeat @relation(fields: [showSeatId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  reference String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  showId    String
+  show      Show     @relation(fields: [showId], references: [id])
+  status    String
+  qrDataUrl String?
+  createdAt DateTime @default(now())
+
+  seats BookingSeat[]
+}
+
+model BookingSeat {
+  id         String   @id @default(cuid())
+  bookingId  String
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  showSeatId String   @unique
+  showSeat   ShowSeat @relation(fields: [showSeatId], references: [id])
+}
+
+model WaitlistEntry {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showId         String
+  show           Show      @relation(fields: [showId], references: [id], onDelete: Cascade)
+  category       String
+  status         String
+  offerToken     String?   @unique
+  offerExpiresAt DateTime?
+  offeredSeatId  String?
+  createdAt      DateTime  @default(now())
+
+  @@index([showId, category, status, createdAt])
+}

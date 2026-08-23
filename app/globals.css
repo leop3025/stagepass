@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #e8b86d;
+  --gold-light: #f3d7a1;
+  --ink: #0c0a09;
+  --cream: #f7f1e7;
+}
+
+html,
+body {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+body {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232, 184, 109, 0.14), transparent),
+    radial-gradient(ellipse 40% 40% at 100% 0%, rgba(80, 50, 20, 0.25), transparent);
+  min-height: 100vh;
+}
+
+.font-display {
+  font-family: var(--font-geist-sans), ui-serif, Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+::selection {
+  background: rgba(232, 184, 109, 0.35);
+}
