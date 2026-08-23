@@ -56,8 +56,7 @@ export async function holdSeats(userId: string, showSeatIds: string[]) {
   await expireStale();
   const ttl = HOLD_MINUTES * 60;
   const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000);
-  const uniqueSeatIds = [...new Set(showSeatIds.map(String))];
-
+const uniqueSeatIds = Array.from(new Set(showSeatIds.map(String)));
   try {
     const holds = await prisma.$transaction(async (tx) => {
       if (isPostgres() && uniqueSeatIds.length) {
